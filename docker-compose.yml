@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  headless-seo:
+    build: .
+    container_name: headless-seo-app
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - RENDER_TIMEOUT=60000
+      - CACHE_TTL=300
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MAIN_APP_URL=http://host.docker.internal:3012
+      - MAX_CONCURRENT_PAGES=20
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  redis:
+    image: redis:6-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,44 +1,63 @@
-# Sử dụng node 18 (hoặc LTS mới hơn)
-FROM node:18-slim
+# Start from an official Node image (bullseye-slim)
+FROM node:18-bullseye-slim
 
-# Cài dependencies cho Chromium (puppeteer)
+# Install required packages for Playwright
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     ca-certificates \
-    chromium \
-    libpangocairo-1.0-0 \
-    libgbm-dev \
-    libgtk-3-0 \
-    libx11-xcb1 \
-    libxcb-dri3-0 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxi6 \
-    libxdamage1 \
-    libxtst6 \
-    libnss3 \
-    libxrandr2 \
+    fonts-liberation \
     libasound2 \
     libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libdrm2 \
-    libgbm1 \
+    libc6 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libexpat1 \
+    libfontconfig1 \
+    libgcc1 \
+    libgconf-2-4 \
+    libgdk-pixbuf2.0-0 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libstdc++6 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxss1 \
+    libxtst6 \
+    lsb-release \
     xdg-utils \
-    && rm -rf /var/lib/apt/lists/*
+    --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
-# Tạo thư mục cho ứng dụng
+# Install Playwright browsers
+RUN npm install -g playwright && playwright install --with-deps
+
 WORKDIR /app
 
-# Copy file package.json và cài đặt
-COPY package.json ./
+# Copy package definitions
+COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy toàn bộ mã nguồn vào container
+# Copy the application
 COPY . .
 
-# Mở port 3001 (nếu config tại server)
+# Expose port 3001
 EXPOSE 3001
 
-# Lệnh chạy khi container start
+# Start the application
 CMD ["npm", "start"]
