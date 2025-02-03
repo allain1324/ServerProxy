@@ -11,6 +11,10 @@ const CACHE_TTL = parseInt(process.env.CACHE_TTL) || 300; // 5 minutes
 const REDIS_HOST = process.env.REDIS_HOST || "redis";
 const REDIS_PORT = parseInt(process.env.REDIS_PORT) || 6379;
 const MAX_CONCURRENT_PAGES = parseInt(process.env.MAX_CONCURRENT_PAGES) || 20;
+const ALLOWED_DOMAINS = (process.env.ALLOWED_DOMAINS || '')
+  .split(',')
+  .map(d => d.trim())
+  .filter(Boolean);
 
 const app = express();
 
@@ -51,15 +55,10 @@ app.get("/render", async (req, res) => {
     return res.status(400).send("Missing ?url=");
   }
 
-  // Optional: domain allowlist
-  const allowedDomains = [
-    "seraphic.website",
-    "myhome.vi-jp-te.info",
-    "localhost",
-  ];
   try {
     const urlObj = new URL(targetUrl);
-    if (!allowedDomains.includes(urlObj.hostname)) {
+    console.log('hostname', urlObj.hostname)
+    if (!ALLOWED_DOMAINS.includes(urlObj.hostname)) {
       return res.status(403).send("Forbidden domain");
     }
   } catch (error) {

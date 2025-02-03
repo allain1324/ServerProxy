@@ -4,15 +4,15 @@ services:
     build: .
     container_name: headless-seo-app
     ports:
-      - "3001:3001"
+      - "${PORT}:3001"
     environment:
-      - PORT=3001
-      - RENDER_TIMEOUT=60000
-      - CACHE_TTL=300
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - MAIN_APP_URL=http://host.docker.internal:3012
-      - MAX_CONCURRENT_PAGES=20
+      - PORT=${PORT}
+      - RENDER_TIMEOUT=${RENDER_TIMEOUT}
+      - CACHE_TTL=${CACHE_TTL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - MAX_CONCURRENT_PAGES=${MAX_CONCURRENT_PAGES}
+      - ALLOWED_DOMAINS=${ALLOWED_DOMAINS}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
