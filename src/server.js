@@ -11,9 +11,9 @@ const CACHE_TTL = parseInt(process.env.CACHE_TTL) || 300; // 5 minutes
 const REDIS_HOST = process.env.REDIS_HOST || "redis";
 const REDIS_PORT = parseInt(process.env.REDIS_PORT) || 6379;
 const MAX_CONCURRENT_PAGES = parseInt(process.env.MAX_CONCURRENT_PAGES) || 20;
-const ALLOWED_DOMAINS = (process.env.ALLOWED_DOMAINS || '')
-  .split(',')
-  .map(d => d.trim())
+const ALLOWED_DOMAINS = (process.env.ALLOWED_DOMAINS || "")
+  .split(",")
+  .map((d) => d.trim())
   .filter(Boolean);
 
 const app = express();
@@ -57,7 +57,7 @@ app.get("/render", async (req, res) => {
 
   try {
     const urlObj = new URL(targetUrl);
-    console.log('hostname', urlObj.hostname)
+    console.log("hostname", urlObj.hostname);
     if (!ALLOWED_DOMAINS.includes(urlObj.hostname)) {
       return res.status(403).send("Forbidden domain");
     }
@@ -82,11 +82,47 @@ app.get("/render", async (req, res) => {
   const [value, release] = await semaphore.acquire();
 
   try {
-    const page = await browser.newPage();
+    const page = await browser.newPage({
+      userAgent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    });
+
+    // Log tất cả response để debug
+    page.on("response", (response) => {
+      console.log(
+        "Response:",
+        response.url(),
+        response.status(),
+        response.headers()
+      );
+    });
+
+    // Goto URL ban đầu
+    console.log("Starting page.goto for:", targetUrl);
     await page.goto(targetUrl, {
       waitUntil: "networkidle",
       timeout: RENDER_TIMEOUT,
     });
+    console.log("Initial URL:", await page.url());
+
+    // Chờ redirect đến URL chứa /guest/ hoặc timeout sau 10 giây
+    let finalUrl = await page.url();
+    if (!finalUrl.includes("/guest/")) {
+      console.log("Waiting for redirect to /guest/...");
+      try {
+        await page.waitForURL("**/guest/**", { timeout: 5000 }); // Chờ tối đa 5 giây
+        finalUrl = await page.url();
+        console.log("Redirect detected, Final URL:", finalUrl);
+      } catch (e) {
+        console.log(
+          "No redirect to /guest/ within 10s, using current URL:",
+          finalUrl
+        );
+      }
+    } else {
+      console.log("Already at /guest/, Final URL:", finalUrl);
+    }
+
     // await page.waitForTimeout(1000);
     const html = await page.content();
     await page.close();
@@ -134,7 +170,7 @@ app.get("/render", async (req, res) => {
     }
 
     res.set("Content-Type", "text/html; charset=utf-8");
-    console.log('resNewHtml', new Date());
+    console.log("resNewHtml", new Date());
     return res.send(minimalHtml);
   } catch (error) {
     console.error(`Error rendering page (${targetUrl}):`, error);
