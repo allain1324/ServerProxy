@@ -89,12 +89,19 @@ app.get("/render", async (req, res) => {
 
     // Log tất cả response để debug
     page.on("response", (response) => {
-      console.log(
-        "Response:",
-        response.url(),
-        response.status(),
-        response.headers()
-      );
+      const request = response.request();
+      const resourceType = request.resourceType();
+      const url = response.url();
+
+      // Chỉ log request chính và không phải tài nguyên tĩnh
+      if (
+        resourceType === "document" &&
+        !url.match(
+          /\.(js|css|png|jpg|jpeg|gif|svg|mp4|webm|ogg|woff|woff2|ttf|eot)$/i
+        )
+      ) {
+        console.log("Response:", url, response.status(), response.headers());
+      }
     });
 
     // Goto URL ban đầu
@@ -105,7 +112,7 @@ app.get("/render", async (req, res) => {
     });
     console.log("Initial URL:", await page.url());
 
-    // Chờ redirect đến URL chứa /guest/ hoặc timeout sau 10 giây
+    // Chờ redirect đến URL chứa /guest/ hoặc timeout sau 5 giây
     let finalUrl = await page.url();
     if (!finalUrl.includes("/guest/")) {
       console.log("Waiting for redirect to /guest/...");
@@ -115,7 +122,7 @@ app.get("/render", async (req, res) => {
         console.log("Redirect detected, Final URL:", finalUrl);
       } catch (e) {
         console.log(
-          "No redirect to /guest/ within 10s, using current URL:",
+          "No redirect to /guest/ within 5s, using current URL:",
           finalUrl
         );
       }
@@ -170,7 +177,7 @@ app.get("/render", async (req, res) => {
     }
 
     res.set("Content-Type", "text/html; charset=utf-8");
-    console.log("resNewHtml", new Date());
+    console.log("resNewHtml", new Date(), minimalHtml);
     return res.send(minimalHtml);
   } catch (error) {
     console.error(`Error rendering page (${targetUrl}):`, error);
