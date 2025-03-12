@@ -153,6 +153,20 @@ app.get("/render", async (req, res) => {
     // Include the title tag
     const titleTag = $("head").find("title").first().toString();
 
+    // Thêm og:url nếu chưa tồn tại
+    let hasOgUrl = metaTags.some((tag) => tag.includes('property="og:url"'));
+    if (!hasOgUrl) {
+      metaTags.push(`<meta property="og:url" content="${targetUrl}">`);
+    }
+
+    // Thêm twitter:url nếu chưa tồn tại
+    let hasTwitterUrl = metaTags.some((tag) =>
+      tag.includes('name="twitter:url"')
+    );
+    if (!hasTwitterUrl) {
+      metaTags.push(`<meta name="twitter:url" content="${targetUrl}">`);
+    }
+
     // Combine all extracted tags
     const combinedMeta = [titleTag, ...metaTags].join("\n    ");
 
