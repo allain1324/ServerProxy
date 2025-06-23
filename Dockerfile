@@ -1,7 +1,7 @@
-# Start from an official Node image (bullseye-slim)
+# Base image
 FROM node:18-bullseye-slim
 
-# Install required packages for Playwright
+# Install dependencies for running browsers
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -42,22 +42,23 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
-# Install Playwright browsers
-RUN npm install -g playwright && playwright install --with-deps
-
+# Set working directory
 WORKDIR /app
 
-# Copy package definitions
+# Copy package files first
 COPY package*.json ./
 
-# Install dependencies
+# Install app dependencies (including playwright)
 RUN npm install
 
-# Copy the application
+# Install Playwright browsers with dependencies
+RUN npx playwright install --with-deps
+
+# Copy rest of the app
 COPY . .
 
-# Expose port 3001
+# Expose port
 EXPOSE 3001
 
-# Start the application
+# Start app
 CMD ["npm", "start"]
