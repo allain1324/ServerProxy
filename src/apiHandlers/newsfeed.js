@@ -1,8 +1,8 @@
 const { match } = require("path-to-regexp");
 
 const matchers = [
-  match("/guest/construction/:idConstruction/newsfeed-builder/:id"),
-  match("/construction/:idConstruction/newsfeed-builder/:id"),
+  match("/guest/construction/:idConstruction/newsfeed/:id"),
+  match("/construction/:idConstruction/newsfeed/:id"),
   match("/guest/newsfeed-builder/:id"),
   match("/newsfeed-builder/:id"),
 ];
