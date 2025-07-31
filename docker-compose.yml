@@ -6,13 +6,12 @@ services:
     ports:
       - "${PORT}:3001"
     environment:
+      - API_BASE_URL=${API_BASE_URL}
       - PORT=${PORT}
       - RENDER_TIMEOUT=${RENDER_TIMEOUT}
       - CACHE_TTL=${CACHE_TTL}
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
-      - MAX_CONCURRENT_PAGES=${MAX_CONCURRENT_PAGES}
-      - ALLOWED_DOMAINS=${ALLOWED_DOMAINS}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
