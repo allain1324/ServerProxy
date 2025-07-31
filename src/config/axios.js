@@ -11,6 +11,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
+    console.log("API Request Interceptor:", config.baseURL);
     // Log request details
     console.log(`🔗 Request: ${config.method.toUpperCase()} ${config.url}`);
     return config;
